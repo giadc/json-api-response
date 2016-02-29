@@ -1,16 +1,14 @@
 <?php
-namespace Giadc\JsonResponse\Responses;
+namespace Giadc\JsonApiResponse\Responses;
 
-use Giadc\JsonResponse\Interfaces\ResponseContract;
-use Giadc\JsonResponse\Pagination\FractalDoctrinePaginatorAdapter as PaginatorAdapter;
-use Giadc\JsonResponse\Requests\RequestParams;
-use Illuminate\Contracts\Routing\ResponseFactory;
-use Illuminate\Pagination\Paginator;
-use Illuminate\Routing\UrlGenerator;
+use Giadc\JsonApiRequest\Requests\RequestParams;
+use Giadc\JsonApiResponse\Interfaces\PaginatorAdapter;
+use Giadc\JsonApiResponse\Interfaces\ResponseContract;
 use League\Fractal\Manager;
 use League\Fractal\Resource\Collection as FractalCollection;
 use League\Fractal\Resource\Item;
-use League\Fractal\Serializer\JsonResponseSerializer;
+use League\Fractal\Serializer\JsonApiSerializer;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 ini_set('xdebug.max_nesting_level', 200);
 
@@ -19,7 +17,7 @@ ini_set('xdebug.max_nesting_level', 200);
  *
  * @package App\Http\Responses
  */
-class LaravelResponse implements ResponseContract
+class Response implements ResponseContract
 {
     /**
      * @var int
@@ -27,20 +25,13 @@ class LaravelResponse implements ResponseContract
     protected $statusCode = 200;
 
     /**
-     * @var \Illuminate\Routing\UrlGenerator
-     */
-    public $url;
-
-    /**
-     * @var \League\Fractal\Manager
+     * @var Manager
      */
     public $fractal;
 
     /**
-     * @var \Illuminate\Contracts\Routing\ResponseFactory
+     * @var RequestParams
      */
-    public $responseFactory;
-
     protected $requestParams;
 
     const CODE_WRONG_ARGS = 'WRONG_ARGS';
@@ -53,18 +44,16 @@ class LaravelResponse implements ResponseContract
     const CODE_INVALID_CREDENTAILS = 'INVALID CREDENTIALS';
 
     /**
-     * @param \Illuminate\Routing\UrlGenerator $url
-     * @param \League\Fractal\Manager $fractal
-     * @param \Illuminate\Contracts\Routing\ResponseFactory $response
+     * @param Manager         $fractal
+     * @param ResponseFactory $response
+     * @param RequestParams   $requestParams
      */
-    public function __construct(UrlGenerator $url, Manager $fractal, ResponseFactory $response, RequestParams $requestParams)
+    public function __construct(Manager $fractal, RequestParams $requestParams)
     {
         $this->fractal = $fractal;
-        $this->responseFactory = $response;
-        $this->url = $url;
         $this->requestParams = $requestParams;
 
-        $this->fractal->setSerializer(new JsonResponseSerializer());
+        $this->fractal->setSerializer(new JsonApiSerializer());
 
         if (isset($_GET['include'])) {
             $fractal->parseIncludes($_GET['include']);
@@ -103,7 +92,7 @@ class LaravelResponse implements ResponseContract
      */
     public function withArray(array $array, array $headers = array())
     {
-        return $this->responseFactory->json($array, $this->statusCode, $headers);
+        return new JsonResponse($array, $this->statusCode, $headers);
     }
 
     /**
@@ -184,7 +173,7 @@ class LaravelResponse implements ResponseContract
     {
         $this->setStatusCode(201);
 
-        return $this->responseFactory->json('', $this->statusCode, $headers);
+        return new JsonResponse('', $this->statusCode, $headers);
     }
 
 
@@ -210,7 +199,7 @@ class LaravelResponse implements ResponseContract
         $this->setStatusCode(200);
         $json = json_decode('{"data": null}');
 
-        return $this->responseFactory->json($json, $this->statusCode, $headers);
+        return new JsonResponse($json, $this->statusCode, $headers);
     }
 
     /**
@@ -223,7 +212,7 @@ class LaravelResponse implements ResponseContract
     {
         $this->setStatusCode(204);
 
-        return $this->responseFactory->json('', $this->statusCode, $headers);
+        return new JsonResponse('', $this->statusCode, $headers);
     }
 
     /**

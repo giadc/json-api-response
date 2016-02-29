@@ -1,5 +1,5 @@
 <?php
-namespace Giadc\JsonResponse\Interfaces;
+namespace Giadc\JsonApiResponse\Interfaces;
 
 interface ResponseContract
 {
