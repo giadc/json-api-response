@@ -1,0 +1,23 @@
+{
+    "name": "giadc/json-response",
+    "description": "A package for handling JSON API responses with Fractal",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "David Hill",
+            "email": "dhill2@gannett.com"
+        },
+        {
+            "name": "Ryan Marganti",
+            "email": "rmarganti@gannett.com"
+        }
+    ],
+    "require": {
+        "league/fractal": "^0.13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Giadc\\JsonResponse\\": "src/"
+        }
+    }
+}
