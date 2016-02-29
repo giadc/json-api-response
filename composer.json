@@ -1,6 +1,6 @@
 {
     "name": "giadc/json-api-response",
-    "description": "A package for handling JSON API responses with Fractal",
+    "description": "A package for handling JSON API responses",
     "license": "MIT",
     "authors": [
         {
