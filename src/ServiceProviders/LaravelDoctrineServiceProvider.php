@@ -28,7 +28,7 @@ class LaravelDoctrineServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
-            'Giadc\JsonApiResponse\Interfaces\PaginatorAdapter',
+            'Giadc\JsonApiResponse\Interfaces\PaginatorContract',
             'Giadc\JsonApiResponse\Pagination\FractalDoctrinePaginatorAdapter'
         );
     }

@@ -2,7 +2,7 @@
 namespace Giadc\JsonApiResponse\Responses;
 
 use Giadc\JsonApiRequest\Requests\RequestParams;
-use Giadc\JsonApiResponse\Interfaces\PaginatorAdapter;
+use Giadc\JsonApiResponse\Pagination\FractalDoctrinePaginatorAdapter as PaginatorAdapter;
 use Giadc\JsonApiResponse\Interfaces\ResponseContract;
 use League\Fractal\Manager;
 use League\Fractal\Resource\Collection as FractalCollection;
