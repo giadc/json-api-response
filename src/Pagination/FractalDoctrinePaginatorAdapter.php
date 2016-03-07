@@ -4,8 +4,9 @@ namespace Giadc\JsonApiResponse\Pagination;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Giadc\JsonApiRequest\Requests\RequestParams;
 use Giadc\JsonApiResponse\Interfaces\PaginatorContract;
+use League\Fractal\Pagination\PaginatorInterface;
 
-class FractalDoctrinePaginatorAdapter implements PaginatorContract
+class FractalDoctrinePaginatorAdapter implements PaginatorInterface, PaginatorContract
 {
     /**
      * The paginator instance.
