@@ -7,18 +7,18 @@ This package makes it easy to return HTTP API responses that fit the [JSON API](
 
 ## Installation
 Via Composer
-```
+```php
 $ composer require giadc/giadc-json-response
 ```
 #### Laravel
 Add the following to the `providers` array of your `config/app.php`
-```
+```php
 Giadc\JsonApiResponse\ServiceProviders\LaravelDoctrineServiceProvider::class,
 ```
 
 ## Usage
 Basic Example:
-```
+```php
 use Giadc\JsonResponse\Responses\Response;
 
 class YourClass {
@@ -34,7 +34,7 @@ class YourClass {
 ```
 
 Available functions:
-```
+```php
 $response->getStatusCode();
 $response->setStatusCode($statusCode);
 $response->withArray(array $array, array $headers = array());
@@ -56,4 +56,5 @@ $response->success($headers);
 ```
 
 ## Transformers
-The GIADC JSON Response packages uses `league/fractal` for the `withItem()`, `withCollection()`, & `withPagination()` responses. See [Fractal's documentation](http://fractal.thephpleague.com/transformers) for more information regarding Transformers.
+The GIADC JSON Response packages uses `league/fractal` for the `withItem()`, `withCollection()`, & `withPagination()` responses. 
+See [Fractal's documentation](http://fractal.thephpleague.com/transformers) for more information regarding Transformers.
