@@ -110,11 +110,9 @@ class Response implements ResponseContract
 
         return $this->withArray(array(
             'errors' => array(
-                array(
-                    'code'      => $errorCode,
-                    'status' => $this->statusCode,
-                    'detail'   => $message,
-                )
+                'code'      => $errorCode,
+                'status' => $this->statusCode,
+                'detail'   => $message,
             )
         ));
     }
