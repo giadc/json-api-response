@@ -2,8 +2,8 @@
 namespace Giadc\JsonApiResponse\Responses;
 
 use Giadc\JsonApiRequest\Requests\RequestParams;
-use Giadc\JsonApiResponse\Pagination\FractalDoctrinePaginatorAdapter as PaginatorAdapter;
 use Giadc\JsonApiResponse\Interfaces\ResponseContract;
+use Giadc\JsonApiResponse\Pagination\FractalDoctrinePaginatorAdapter as PaginatorAdapter;
 use League\Fractal\Manager;
 use League\Fractal\Resource\Collection as FractalCollection;
 use League\Fractal\Resource\Item;
@@ -34,13 +34,13 @@ class Response implements ResponseContract
      */
     protected $requestParams;
 
-    const CODE_WRONG_ARGS = 'WRONG_ARGS';
-    const CODE_NOT_FOUND = 'NOT_FOUND';
-    const CODE_INTERNAL_ERROR = 'INTERNAL_ERROR';
-    const CODE_UNAUTHORIZED = 'UNAUTHORIZED';
-    const CODE_FORBIDDEN = 'FORBIDDEN';
-    const CODE_VALIDATION_ERROR = 'VALIDATION_ERROR';
-    const CODE_NOT_SEARCHABLE = 'NOT_SEARCHABLE';
+    const CODE_WRONG_ARGS          = 'WRONG_ARGS';
+    const CODE_NOT_FOUND           = 'NOT_FOUND';
+    const CODE_INTERNAL_ERROR      = 'INTERNAL_ERROR';
+    const CODE_UNAUTHORIZED        = 'UNAUTHORIZED';
+    const CODE_FORBIDDEN           = 'FORBIDDEN';
+    const CODE_VALIDATION_ERROR    = 'VALIDATION_ERROR';
+    const CODE_NOT_SEARCHABLE      = 'NOT_SEARCHABLE';
     const CODE_INVALID_CREDENTAILS = 'INVALID CREDENTIALS';
 
     /**
@@ -50,7 +50,7 @@ class Response implements ResponseContract
      */
     public function __construct(Manager $fractal, RequestParams $requestParams)
     {
-        $this->fractal = $fractal;
+        $this->fractal       = $fractal;
         $this->requestParams = $requestParams;
 
         $this->fractal->setSerializer(new JsonApiSerializer());
@@ -110,10 +110,12 @@ class Response implements ResponseContract
 
         return $this->withArray(array(
             'errors' => array(
-                'code'      => $errorCode,
-                'status' => $this->statusCode,
-                'detail'   => $message,
-            )
+                array(
+                    'code'   => $errorCode,
+                    'status' => $this->statusCode,
+                    'detail' => $message,
+                ),
+            ),
         ));
     }
 
@@ -130,7 +132,7 @@ class Response implements ResponseContract
         }
 
         return $this->withArray(array(
-            'errors' => $errors
+            'errors' => $errors,
         ));
     }
 
@@ -145,8 +147,8 @@ class Response implements ResponseContract
         return $this->withArray(array(
             'data' => array(
                 'http_code' => $this->statusCode,
-                'message'   => $message
-            )
+                'message'   => $message,
+            ),
         ));
     }
 
@@ -173,7 +175,6 @@ class Response implements ResponseContract
 
         return new JsonResponse('', $this->statusCode, $headers);
     }
-
 
     /**
      * Return a new Update Successful Response form application
@@ -223,7 +224,7 @@ class Response implements ResponseContract
      */
     public function withItem($item, $callback, $resourceKey = '')
     {
-        $resource = new Item($item, $callback, $resourceKey);
+        $resource  = new Item($item, $callback, $resourceKey);
         $rootScope = $this->fractal->createData($resource);
 
         return $this->withArray($rootScope->toArray());
@@ -239,7 +240,7 @@ class Response implements ResponseContract
      */
     public function withCollection($collection, $callback, $resourceKey = '')
     {
-        $resource = new FractalCollection($collection, $callback, $resourceKey);
+        $resource  = new FractalCollection($collection, $callback, $resourceKey);
         $rootScope = $this->fractal->createData($resource);
 
         return $this->withArray($rootScope->toArray());
@@ -335,7 +336,7 @@ class Response implements ResponseContract
     public function errorsValidation($messages)
     {
         $errors = [];
-        
+
         foreach ($messages as $message) {
             $errors[] = array(
                 'code'   => self::CODE_VALIDATION_ERROR,
@@ -345,7 +346,7 @@ class Response implements ResponseContract
         }
 
         return $this->setStatusCode(400)->withErrors($errors);
-    }    
+    }
 
     /**
      * Return a new JSON response Validation error
