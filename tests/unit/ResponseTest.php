@@ -1,5 +1,7 @@
 <?php
 
+use App\TestEntity;
+use App\TestTransformer;
 use Giadc\JsonApiRequest\Requests\RequestParams;
 use Giadc\JsonApiResponse\Responses\Response;
 use League\Fractal\Manager;
@@ -166,5 +168,66 @@ class ResponseTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($expectedOutput, json_decode($response->getContent(), true));
         $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function test_it_generates_a_delete_successful_response()
+    {
+        $response = $this->response->deleteSuccessful();
+        $this->assertEquals(204, $response->getStatusCode());
+    }
+
+    public function test_it_generates_a_create_successful_response()
+    {
+        $response = $this->response->createSuccessful();
+        $this->assertEquals(201, $response->getStatusCode());
+    }
+
+    public function test_it_generates_an_entity_item_response()
+    {
+        $expectedOutput = [
+            'data' => [
+                'id'         => '1',
+                'type'       => 'test',
+                'attributes' => [
+                    'name' => 'Test Entity',
+                ],
+            ],
+        ];
+
+        $entity   = new TestEntity(1, 'Test Entity');
+        $response = $this->response->withItem($entity, new TestTransformer(), 'test');
+
+        $this->assertEquals($expectedOutput, json_decode($response->getContent(), true));
+        $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    public function test_it_generates_an_entity_collection_response()
+    {
+        $expectedOutput = [
+            'data' => [
+                [
+                    'id'         => '1',
+                    'type'       => 'test',
+                    'attributes' => [
+                        'name' => 'Test Entity 1',
+                    ],
+                ],
+                [
+                    'id'         => '2',
+                    'type'       => 'test',
+                    'attributes' => [
+                        'name' => 'Test Entity 2',
+                    ],
+                ],
+            ],
+        ];
+
+        $entity1 = new TestEntity(1, 'Test Entity 1');
+        $entity2 = new TestEntity(2, 'Test Entity 2');
+
+        $response = $this->response->withCollection([$entity1, $entity2], new TestTransformer(), 'test');
+
+        $this->assertEquals($expectedOutput, json_decode($response->getContent(), true));
+        $this->assertEquals(200, $response->getStatusCode());
     }
 }

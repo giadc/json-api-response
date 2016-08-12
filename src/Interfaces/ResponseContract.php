@@ -37,20 +37,12 @@ interface ResponseContract
     public function withError($message, $errorCode);
 
     /*
-     * Return a new JSON Response message
-     *
-     * @param  string $message
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function withMessage($message);
-
-    /*
      * Return a new Delete Successful Response form application
      *
      * @param  string $message
      * @return \Illuminate\Http\JsonResponse
      */
-    public function deleteSuccessful($message = 'Delete Successful');
+    public function deleteSuccessful();
 
     /*
      * Return a new JSON response from an item

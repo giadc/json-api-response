@@ -137,30 +137,13 @@ class Response implements ResponseContract
     }
 
     /**
-     * Return a new JSON Response message
-     *
-     * @param $message
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function withMessage($message)
-    {
-        return $this->withArray(array(
-            'data' => array(
-                'http_code' => $this->statusCode,
-                'message'   => $message,
-            ),
-        ));
-    }
-
-    /**
      * Return a new Delete Successful Response form application
      *
-     * @param  string $message
      * @return \Illuminate\Http\JsonResponse
      */
-    public function deleteSuccessful($message = 'Delete Successful')
+    public function deleteSuccessful()
     {
-        return $this->withMessage($message);
+        return $this->success();
     }
 
     /**
