@@ -144,11 +144,15 @@ class Response implements ResponseContract
      * @param  array $headers
      * @return \Illuminate\Http\JsonResponse
      */
-    public function createSuccessful(array $headers = array())
+    public function createSuccessful($entity = null, $callback = null, $resourceKey = '', array $headers = [])
     {
         $this->setStatusCode(201);
 
-        return new JsonResponse('', $this->statusCode, $headers);
+        if (is_null($entity)) {
+            return new JsonResponse('', $this->statusCode, $headers);
+        }
+
+        return $this->withItem($entity, $callback, $resourceKey, $headers);
     }
 
     /**
@@ -192,17 +196,18 @@ class Response implements ResponseContract
     /**
      * Return a new JSON response from an item
      *
-     * @param $item
-     * @param $callback
+     * @param mixed  $item
+     * @param mixed  $callback
      * @param string $resourceKey
+     * @param array  $headers
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function withItem($item, $callback, $resourceKey = '')
+    public function withItem($item, $callback, $resourceKey = '', $headers = [])
     {
         $resource  = new Item($item, $callback, $resourceKey);
         $rootScope = $this->fractal->createData($resource);
 
-        return $this->withArray($rootScope->toArray());
+        return $this->withArray($rootScope->toArray(), $headers);
     }
 
     /**

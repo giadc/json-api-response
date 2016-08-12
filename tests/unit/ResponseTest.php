@@ -164,6 +164,25 @@ class ResponseTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(201, $response->getStatusCode());
     }
 
+    public function test_it_generates_a_create_successful_response_with_content()
+    {
+        $expectedOutput = [
+            'data' => [
+                'id'         => '1',
+                'type'       => 'test',
+                'attributes' => [
+                    'name' => 'Test Entity',
+                ],
+            ],
+        ];
+
+        $entity   = new TestEntity(1, 'Test Entity');
+        $response = $this->response->createSuccessful($entity, new TestTransformer(), 'test');
+
+        $this->assertEquals($expectedOutput, json_decode($response->getContent(), true));
+        $this->assertEquals(201, $response->getStatusCode());
+    }
+
     public function test_it_generates_an_entity_item_response()
     {
         $expectedOutput = [

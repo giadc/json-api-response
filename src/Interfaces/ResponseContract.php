@@ -1,6 +1,8 @@
 <?php
 namespace Giadc\JsonApiResponse\Interfaces;
 
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+
 interface ResponseContract
 {
     /*
@@ -70,6 +72,14 @@ interface ResponseContract
      * @return \Illuminate\Http\JsonResponse
      */
     public function withPagination($paginator, $callback);
+
+    /**
+     * Return a new JSON response from a HttpException
+     *
+     * @param  HttpExceptionInterface $httpException
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function withHttpException(HttpExceptionInterface $httpException);
 
     /*
      * Return a new JSON response forbidden error
