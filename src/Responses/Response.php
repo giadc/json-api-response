@@ -9,6 +9,7 @@ use League\Fractal\Resource\Collection as FractalCollection;
 use League\Fractal\Resource\Item;
 use League\Fractal\Serializer\JsonApiSerializer;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 ini_set('xdebug.max_nesting_level', 200);
 
@@ -33,15 +34,6 @@ class Response implements ResponseContract
      * @var RequestParams
      */
     protected $requestParams;
-
-    const CODE_WRONG_ARGS          = 'WRONG_ARGS';
-    const CODE_NOT_FOUND           = 'NOT_FOUND';
-    const CODE_INTERNAL_ERROR      = 'INTERNAL_ERROR';
-    const CODE_UNAUTHORIZED        = 'UNAUTHORIZED';
-    const CODE_FORBIDDEN           = 'FORBIDDEN';
-    const CODE_VALIDATION_ERROR    = 'VALIDATION_ERROR';
-    const CODE_NOT_SEARCHABLE      = 'NOT_SEARCHABLE';
-    const CODE_INVALID_CREDENTAILS = 'INVALID_CREDENTIALS';
 
     /**
      * @param Manager         $fractal
@@ -102,7 +94,7 @@ class Response implements ResponseContract
      * @param $errorCode
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function withError($message, $errorCode)
+    public function withError($message)
     {
         if ($this->statusCode === 200) {
             trigger_error('Status set to 200..please try again.');
@@ -111,7 +103,7 @@ class Response implements ResponseContract
         return $this->withArray(array(
             'errors' => array(
                 array(
-                    'code'   => $errorCode,
+                    'code'   => $this->getErrorCode($this->statusCode),
                     'status' => $this->statusCode,
                     'detail' => $message,
                 ),
@@ -247,6 +239,32 @@ class Response implements ResponseContract
     }
 
     /**
+     * Return a new JSON response from a HttpException
+     *
+     * @param  HttpExceptionInterface $httpException
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function withHttpException(HttpExceptionInterface $httpException)
+    {
+        $response   = new JsonResponse([], $httpException->getStatusCode());
+        $statusText = JsonResponse::$statusTexts[$httpException->getStatusCode()];
+
+        $data = array(
+            "errors" => array(
+                array(
+                    'code'   => $this->getErrorCode($httpException->getStatusCode()),
+                    'status' => $httpException->getStatusCode(),
+                    'detail' => $httpException->getMessage() ?: $statusText,
+                ),
+            ),
+        );
+
+        $response->setData($data);
+
+        return $response;
+    }
+
+    /**
      * Return a new JSON response forbidden error
      *
      * @param string $message
@@ -254,7 +272,7 @@ class Response implements ResponseContract
      */
     public function errorForbidden($message = 'Forbidden')
     {
-        return $this->setStatusCode(403)->withError($message, self::CODE_FORBIDDEN);
+        return $this->setStatusCode(403)->withError($message);
     }
 
     /**
@@ -265,7 +283,7 @@ class Response implements ResponseContract
      */
     public function errorInternalError($message = 'Internal Error')
     {
-        return $this->setStatusCode(500)->withError($message, self::CODE_INTERNAL_ERROR);
+        return $this->setStatusCode(500)->withError($message);
     }
 
     /**
@@ -274,7 +292,7 @@ class Response implements ResponseContract
      */
     public function errorNotFound($message = 'Not Found')
     {
-        return $this->setStatusCode(404)->withError($message, self::CODE_NOT_FOUND);
+        return $this->setStatusCode(404)->withError($message);
     }
 
     /**
@@ -285,18 +303,7 @@ class Response implements ResponseContract
      */
     public function errorUnauthorized($message = 'Unauthorized')
     {
-        return $this->setStatusCode(401)->withError($message, self::CODE_UNAUTHORIZED);
-    }
-
-    /**
-     * Return a new JSON response invalid credentials
-     *
-     * @param string $message
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function errorInvalidCredentials($message = 'Invalid Credentails')
-    {
-        return $this->setStatusCode(401)->withError($message, self::CODE_INVALID_CREDENTAILS);
+        return $this->setStatusCode(401)->withError($message);
     }
 
     /**
@@ -308,21 +315,21 @@ class Response implements ResponseContract
      */
     public function errorValidation($message = 'Validation Error', $field = null)
     {
-        $error = [
-            'code'   => self::CODE_VALIDATION_ERROR,
-            'status' => 400,
+        $error = array(
+            'code'   => "VALIDATION_ERROR",
+            'status' => 422,
             'detail' => $message,
-        ];
+        );
 
         if (!is_null($field)) {
             $error['source'] = ['parameter' => $field];
         }
 
-        return $this->setStatusCode(400)->withArray([
-            'errors' => [
+        return $this->setStatusCode(422)->withArray(array(
+            'errors' => array(
                 $error,
-            ],
-        ]);
+            ),
+        ));
     }
 
     /**
@@ -343,8 +350,8 @@ class Response implements ResponseContract
         $errorObjects = array_map(function ($field, $errors) {
             return array_map(function ($error) use ($field) {
                 return [
-                    'code'   => self::CODE_VALIDATION_ERROR,
-                    'status' => 400,
+                    'code'   => "VALIDATION_ERROR",
+                    'status' => 422,
                     'detail' => $error,
                     'source' => ['parameter' => $field],
                 ];
@@ -355,7 +362,7 @@ class Response implements ResponseContract
             return array_merge($carrier, $input);
         }, []);
 
-        return $this->setStatusCode(400)->withErrors($response);
+        return $this->setStatusCode(422)->withErrors($response);
     }
 
     /**
@@ -366,6 +373,18 @@ class Response implements ResponseContract
      */
     public function errorNotSearchable($message = 'Not Searchable')
     {
-        return $this->setStatusCode(403)->withError($message, self::CODE_NOT_SEARCHABLE);
+        return $this->setStatusCode(403)->withError($message);
+    }
+
+    /**
+     * Get the error code for the given status code
+     *
+     * @param  int $statusCode
+     * @return string
+     */
+    private function getErrorCode($statusCode)
+    {
+        $statusText = JsonResponse::$statusTexts[$statusCode];
+        return strtoupper(str_replace(' ', '_', $statusText));
     }
 }

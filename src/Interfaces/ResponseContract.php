@@ -34,7 +34,7 @@ interface ResponseContract
      * @param  string $errorCode
      * @return \Illuminate\Http\JsonResponse
      */
-    public function withError($message, $errorCode);
+    public function withError($message);
 
     /*
      * Return a new Delete Successful Response form application
@@ -102,14 +102,6 @@ interface ResponseContract
      * @return \Illuminate\Http\JsonResponse
      */
     public function errorUnauthorized($message = 'Unauthorized');
-
-    /*
-     * Return a new JSON response invalid credentials
-     *
-     * @param  string $message
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function errorInvalidCredentials($message = 'Invalid Credentails');
 
     /*
      * Return a new JSON response Validation error

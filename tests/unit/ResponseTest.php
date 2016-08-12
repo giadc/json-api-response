@@ -36,7 +36,7 @@ class ResponseTest extends PHPUnit_Framework_TestCase
         $expectedOutput = [
             "errors" => [
                 [
-                    "code"   => "INTERNAL_ERROR",
+                    "code"   => "INTERNAL_SERVER_ERROR",
                     "status" => 500,
                     "detail" => "Internal Error",
                 ],
@@ -85,31 +85,13 @@ class ResponseTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(401, $response->getStatusCode());
     }
 
-    public function test_it_generates_an_error_response_for_invalid_credentials()
-    {
-        $expectedOutput = [
-            "errors" => [
-                [
-                    "code"   => "INVALID_CREDENTIALS",
-                    "status" => 401,
-                    "detail" => "Invalid Credentials",
-                ],
-            ],
-        ];
-
-        $response = $this->response->errorInvalidCredentials("Invalid Credentials");
-
-        $this->assertEquals($expectedOutput, json_decode($response->getContent(), true));
-        $this->assertEquals(401, $response->getStatusCode());
-    }
-
     public function test_it_generates_an_error_response_for_a_single_validation_error()
     {
         $expectedOutput = [
             "errors" => [
                 [
                     "code"   => "VALIDATION_ERROR",
-                    "status" => 400,
+                    "status" => 422,
                     "detail" => "Error Message",
                     "source" => [
                         "parameter" => "field",
@@ -121,7 +103,7 @@ class ResponseTest extends PHPUnit_Framework_TestCase
         $response = $this->response->errorValidation("Error Message", "field");
 
         $this->assertEquals($expectedOutput, json_decode($response->getContent(), true));
-        $this->assertEquals(400, $response->getStatusCode());
+        $this->assertEquals(422, $response->getStatusCode());
     }
 
     public function test_it_generates_an_error_response_for_multiple_validation_errors()
@@ -140,7 +122,7 @@ class ResponseTest extends PHPUnit_Framework_TestCase
             "errors" => [
                 [
                     "code"   => "VALIDATION_ERROR",
-                    "status" => 400,
+                    "status" => 422,
                     "detail" => "Error 1",
                     "source" => [
                         "parameter" => "field1",
@@ -148,14 +130,14 @@ class ResponseTest extends PHPUnit_Framework_TestCase
                 ],
                 [
                     "code"   => "VALIDATION_ERROR",
-                    "status" => 400,
+                    "status" => 422,
                     "detail" => "Error 2",
                     "source" => [
                         "parameter" => "field1",
                     ],
                 ], [
                     "code"   => "VALIDATION_ERROR",
-                    "status" => 400,
+                    "status" => 422,
                     "detail" => "Error 3",
                     "source" => [
                         "parameter" => "field2",
@@ -167,7 +149,7 @@ class ResponseTest extends PHPUnit_Framework_TestCase
         $response = $this->response->errorsValidation($input);
 
         $this->assertEquals($expectedOutput, json_decode($response->getContent(), true));
-        $this->assertEquals(400, $response->getStatusCode());
+        $this->assertEquals(422, $response->getStatusCode());
     }
 
     public function test_it_generates_a_delete_successful_response()
@@ -229,5 +211,24 @@ class ResponseTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($expectedOutput, json_decode($response->getContent(), true));
         $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    public function test_it_generates_a_response_for_an_http_exception()
+    {
+        $expectedOutput = [
+            "errors" => [
+                [
+                    "code"   => "NOT_FOUND",
+                    "status" => 404,
+                    "detail" => "Not Found",
+                ],
+            ],
+        ];
+
+        $exception = new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
+        $response  = $this->response->withHttpException($exception);
+
+        $this->assertEquals($expectedOutput, json_decode($response->getContent(), true));
+        $this->assertEquals(404, $response->getStatusCode());
     }
 }
