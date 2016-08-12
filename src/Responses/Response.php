@@ -328,27 +328,6 @@ class Response implements ResponseContract
     }
 
     /**
-     * Returns a new JSON response with multiple validation errors
-     *
-     * @param  array $messages
-     * @return \Illuminate\Http\Resposne
-     */
-    public function errorsValidation($messages)
-    {
-        $errors = [];
-
-        foreach ($messages as $message) {
-            $errors[] = array(
-                'code'   => self::CODE_VALIDATION_ERROR,
-                'status' => 400,
-                'detail' => $message,
-            );
-        }
-
-        return $this->setStatusCode(400)->withErrors($errors);
-    }
-
-    /**
      * Return a new JSON response Validation error
      *
      * @param string $message
@@ -361,6 +340,39 @@ class Response implements ResponseContract
         }
 
         return $this->setStatusCode(400)->withError($message, self::CODE_VALIDATION_ERROR);
+    }
+
+    /**
+     * Returns a new JSON response with multiple validation errors.
+     * $errors should be passed as an array whose keys are the names of the inputs and whose
+     * values are the errors associated with that input. For example:
+     *
+     *  [
+     *      'name' => ['name is too short', 'name should be capitalized'],
+     *      'email' => ['email should be a valid email'],
+     *  ]
+     *
+     * @param  array $messages
+     * @return \Illuminate\Http\Resposne
+     */
+    public function errorsValidation($messages)
+    {
+        $errorObjects = array_map(function ($field, $errors) {
+            return array_map(function ($error) use ($field) {
+                return [
+                    'code'   => self::CODE_VALIDATION_ERROR,
+                    'status' => 400,
+                    'detail' => $error,
+                    'source' => ['parameter' => $field],
+                ];
+            }, $errors);
+        }, array_keys($messages), $messages);
+
+        $response = array_reduce($errorObjects, function ($carrier, $input) {
+            return array_merge($carrier, $input);
+        }, []);
+
+        return $this->setStatusCode(400)->withErrors($response);
     }
 
     /**

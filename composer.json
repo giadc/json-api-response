@@ -13,8 +13,13 @@
         }
     ],
     "require": {
+        "giadc/json-api-request": "^0.3.1",
         "league/fractal": "^0.13.0",
-        "symfony/http-foundation": ">2.0"
+        "symfony/http-foundation": "^2.7.0"
+    },
+    "require-dev": {
+        "mockery/mockery": "^0.9.5",
+        "phpunit/phpunit": "^5.4"
     },
     "autoload": {
         "psr-4": {
