@@ -41,7 +41,7 @@ class Response implements ResponseContract
     const CODE_FORBIDDEN           = 'FORBIDDEN';
     const CODE_VALIDATION_ERROR    = 'VALIDATION_ERROR';
     const CODE_NOT_SEARCHABLE      = 'NOT_SEARCHABLE';
-    const CODE_INVALID_CREDENTAILS = 'INVALID CREDENTIALS';
+    const CODE_INVALID_CREDENTAILS = 'INVALID_CREDENTIALS';
 
     /**
      * @param Manager         $fractal
@@ -282,7 +282,7 @@ class Response implements ResponseContract
      */
     public function errorInternalError($message = 'Internal Error')
     {
-        return $this->setStatusCode(403)->withError($message, self::CODE_INTERNAL_ERROR);
+        return $this->setStatusCode(500)->withError($message, self::CODE_INTERNAL_ERROR);
     }
 
     /**
@@ -302,7 +302,7 @@ class Response implements ResponseContract
      */
     public function errorUnauthorized($message = 'Unauthorized')
     {
-        return $this->setStatusCode(403)->withError($message, self::CODE_UNAUTHORIZED);
+        return $this->setStatusCode(401)->withError($message, self::CODE_UNAUTHORIZED);
     }
 
     /**
@@ -317,29 +317,29 @@ class Response implements ResponseContract
     }
 
     /**
-     * Return a new JSON response invalid arguments
-     *
-     * @param string $message
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function errorWrongArgs($message = 'Wrong Arguments')
-    {
-        return $this->setStatusCode(403)->withError($message, self::CODE_WRONG_ARGS);
-    }
-
-    /**
      * Return a new JSON response Validation error
      *
      * @param string $message
+     * @param string $field
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function errorValidation($message = 'Validation Error')
+    public function errorValidation($message = 'Validation Error', $field = null)
     {
-        if ($message instanceof Illuminate\Support\MessageBag) {
-            $message = $message->__toString();
+        $error = [
+            'code'   => self::CODE_VALIDATION_ERROR,
+            'status' => 400,
+            'detail' => $message,
+        ];
+
+        if (!is_null($field)) {
+            $error['source'] = ['parameter' => $field];
         }
 
-        return $this->setStatusCode(400)->withError($message, self::CODE_VALIDATION_ERROR);
+        return $this->setStatusCode(400)->withArray([
+            'errors' => [
+                $error,
+            ],
+        ]);
     }
 
     /**

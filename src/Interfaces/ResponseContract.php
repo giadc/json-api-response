@@ -120,14 +120,6 @@ interface ResponseContract
     public function errorInvalidCredentials($message = 'Invalid Credentails');
 
     /*
-     * Return a new JSON response invalid arguments
-     *
-     * @param  string $message
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function errorWrongArgs($message = 'Wrong Arguments');
-
-    /*
      * Return a new JSON response Validation error
      *
      * @param  string $message
