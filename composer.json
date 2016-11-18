@@ -13,7 +13,7 @@
         }
     ],
     "require": {
-        "giadc/json-api-request": "^0.3.1",
+        "giadc/json-api-request": "^0.4.0",
         "league/fractal": "^0.13.0",
         "symfony/http-foundation": "^2.7.0"
     },
