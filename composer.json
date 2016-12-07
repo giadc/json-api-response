@@ -14,7 +14,7 @@
     ],
     "require": {
         "giadc/json-api-request": "^0.4.0",
-        "league/fractal": "^0.13.0",
+        "league/fractal": "^0.14.0",
         "symfony/http-foundation": "^2.7.0"
     },
     "require-dev": {
