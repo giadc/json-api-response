@@ -152,16 +152,25 @@ class ResponseTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(422, $response->getStatusCode());
     }
 
+    public function test_it_generates_a_generic_success_response()
+    {
+        $response = $this->response->success();
+        $this->assertEquals(204, $response->getStatusCode());
+        $this->assertEquals('', $response->getContent());
+    }
+
     public function test_it_generates_a_delete_successful_response()
     {
         $response = $this->response->deleteSuccessful();
         $this->assertEquals(204, $response->getStatusCode());
+        $this->assertEquals('', $response->getContent());
     }
 
     public function test_it_generates_a_create_successful_response()
     {
         $response = $this->response->createSuccessful();
         $this->assertEquals(201, $response->getStatusCode());
+        $this->assertEquals('', $response->getContent());
     }
 
     public function test_it_generates_a_create_successful_response_with_content()

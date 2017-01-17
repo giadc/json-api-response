@@ -9,6 +9,7 @@ use League\Fractal\Resource\Collection as FractalCollection;
 use League\Fractal\Resource\Item;
 use League\Fractal\Serializer\JsonApiSerializer;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 ini_set('xdebug.max_nesting_level', 200);
@@ -115,7 +116,7 @@ class Response implements ResponseContract
      * Returns a new JSON response with multiple errors
      *
      * @param  array $errors
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function withErrors($errors)
     {
@@ -131,7 +132,7 @@ class Response implements ResponseContract
     /**
      * Return a new Delete Successful Response form application
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function deleteSuccessful()
     {
@@ -142,14 +143,14 @@ class Response implements ResponseContract
      * Return a new Create Successful Response form application
      *
      * @param  array $headers
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function createSuccessful($entity = null, $callback = null, $resourceKey = '', array $headers = [])
     {
         $this->setStatusCode(201);
 
         if (is_null($entity)) {
-            return new JsonResponse('', $this->statusCode, $headers);
+            return new HttpResponse('', $this->statusCode, $headers);
         }
 
         return $this->withItem($entity, $callback, $resourceKey, $headers);
@@ -159,7 +160,7 @@ class Response implements ResponseContract
      * Return a new Update Successful Response form application
      *
      * @param  array $headers
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function updateSuccessful(array $headers = array())
     {
@@ -170,7 +171,7 @@ class Response implements ResponseContract
      * Returns with null data
      *
      * @param  array $headers
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function withNull(array $headers = array())
     {
@@ -184,13 +185,13 @@ class Response implements ResponseContract
      * Returns a 204 no content
      *
      * @param  array $headers
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function success(array $headers = array())
     {
         $this->setStatusCode(204);
 
-        return new JsonResponse('', $this->statusCode, $headers);
+        return new HttpResponse('', $this->statusCode, $headers);
     }
 
     /**
@@ -348,7 +349,7 @@ class Response implements ResponseContract
      *  ]
      *
      * @param  array $messages
-     * @return \Illuminate\Http\Resposne
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function errorsValidation($messages)
     {
