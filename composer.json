@@ -13,7 +13,7 @@
         }
     ],
     "require": {
-        "giadc/json-api-request": "dev-laravel-6",
+        "giadc/json-api-request": "^1.2.0",
         "league/fractal": "~0.1",
         "symfony/http-kernel": "^3.4|^4.0|^5.0"
     },
