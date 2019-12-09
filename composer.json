@@ -13,17 +13,22 @@
         }
     ],
     "require": {
-        "giadc/json-api-request": "~1.0",
+        "giadc/json-api-request": "^1.2.0",
         "league/fractal": "~0.1",
-        "symfony/http-kernel": "~3.3"
+        "symfony/http-kernel": "^3.4|^4.0|^5.0"
     },
     "require-dev": {
-        "mockery/mockery": "^0.9.5",
-        "phpunit/phpunit": "^5.4"
+        "mockery/mockery": "^1.3",
+        "phpunit/phpunit": "^8.4"
     },
     "autoload": {
         "psr-4": {
             "Giadc\\JsonApiResponse\\": "src/"
         }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
     }
 }

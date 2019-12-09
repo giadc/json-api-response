@@ -5,10 +5,11 @@ use App\TestTransformer;
 use Giadc\JsonApiRequest\Requests\RequestParams;
 use Giadc\JsonApiResponse\Responses\Response;
 use League\Fractal\Manager;
+use PHPUnit\Framework\TestCase;
 
-class ResponseTest extends PHPUnit_Framework_TestCase
+class ResponseTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->response = new Response(new Manager(), new RequestParams());
     }
