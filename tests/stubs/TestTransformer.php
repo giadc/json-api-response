@@ -1,13 +1,14 @@
 <?php
+
 namespace App;
 
 use App\TestEntity;
-use League\Fractal\TransformerAbstract;
+use Giadc\JsonApiResponse\Fractal\ResourceTransformer;
 
 /**
  * Class TestTransformer
  */
-class TestTransformer extends TransformerAbstract
+class TestTransformer extends ResourceTransformer
 {
     /**
      * @var array
@@ -19,15 +20,10 @@ class TestTransformer extends TransformerAbstract
      */
     protected $defaultIncludes = [];
 
-    /**
-     * @param App\TestEntity $entity
-     * @return array
-     */
-    public function transform(TestEntity $entity)
+    protected array $defaultFields = [];
+
+    public static function resourceName(): string
     {
-        return [
-            'id'   => $entity->getId(),
-            'name' => $entity->getName(),
-        ];
+        return TestEntity::class;
     }
 }
