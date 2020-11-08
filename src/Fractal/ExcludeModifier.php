@@ -7,6 +7,8 @@ use Giadc\JsonApiResponse\Interfaces\AbstractDataModifier;
 
 class ExcludeModifier implements AbstractDataModifier
 {
+    use ValidateAttributesTrait;
+
     public function __invoke(
         array $data,
         string $resourceKey,
@@ -21,6 +23,8 @@ class ExcludeModifier implements AbstractDataModifier
         ) {
             return $data;
         }
+
+        $this->validateRequestedAttributes($excludes, $data);
 
         return array_filter(
             $data,

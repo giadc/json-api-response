@@ -7,6 +7,8 @@ use Giadc\JsonApiResponse\Interfaces\AbstractDataModifier;
 
 class FieldsModifier implements AbstractDataModifier
 {
+    use ValidateAttributesTrait;
+
     public function __invoke(array $data, string $resourceKey, RequestParams $requestParams): array
     {
         $fields = $requestParams->getFields()->get($resourceKey);
@@ -14,6 +16,8 @@ class FieldsModifier implements AbstractDataModifier
         if ($fields === null) {
             return $data;
         }
+
+        $this->validateRequestedAttributes($fields, $data);
 
         return array_filter($data, function ($key) use ($fields) {
             return in_array($key, array_merge($fields, ['id']));

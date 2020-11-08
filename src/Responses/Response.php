@@ -3,6 +3,7 @@
 namespace Giadc\JsonApiResponse\Responses;
 
 use Giadc\JsonApiRequest\Requests\RequestParams;
+use Giadc\JsonApiResponse\Fractal\ResourceTransformer;
 use Giadc\JsonApiResponse\Interfaces\JsonApiResource;
 use Giadc\JsonApiResponse\Interfaces\ResponseContract;
 use Giadc\JsonApiResponse\Pagination\FractalDoctrinePaginatorAdapter as PaginatorAdapter;
@@ -133,7 +134,7 @@ class Response implements ResponseContract
      */
     public function withResourceItem(
         JsonApiResource $item,
-        TransformerAbstract $transformer,
+        ResourceTransformer $transformer,
         array $headers = []
     ): JsonResponse {
         return $this->withItem(

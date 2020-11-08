@@ -2,6 +2,7 @@
 
 namespace Giadc\JsonApiResponse\Interfaces;
 
+use Giadc\JsonApiResponse\Fractal\ResourceTransformer;
 use League\Fractal\TransformerAbstract;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -71,7 +72,7 @@ interface ResponseContract
      */
     public function withResourceItem(
         JsonApiResource $item,
-        TransformerAbstract $transformer,
+        ResourceTransformer $transformer,
         array $headers = []
     ): JsonResponse;
 
