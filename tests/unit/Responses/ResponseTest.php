@@ -14,7 +14,7 @@ class ResponseTest extends TestCase
         $this->response = new Response(new Manager(), new RequestParams());
     }
 
-    public function test_it_generates_an_error_response_for_forbidden()
+    public function test_it_generates_an_error_response_for_forbidden(): void
     {
         $expectedOutput = [
             "errors" => [
@@ -32,7 +32,7 @@ class ResponseTest extends TestCase
         $this->assertEquals(403, $response->getStatusCode());
     }
 
-    public function test_it_generates_an_error_response_for_an_internal_error()
+    public function test_it_generates_an_error_response_for_an_internal_error(): void
     {
         $expectedOutput = [
             "errors" => [
@@ -50,7 +50,7 @@ class ResponseTest extends TestCase
         $this->assertEquals(500, $response->getStatusCode());
     }
 
-    public function test_it_generates_an_error_response_for_not_found()
+    public function test_it_generates_an_error_response_for_not_found(): void
     {
         $expectedOutput = [
             "errors" => [
@@ -68,7 +68,7 @@ class ResponseTest extends TestCase
         $this->assertEquals(404, $response->getStatusCode());
     }
 
-    public function test_it_generates_an_error_response_for_unauthrozied()
+    public function test_it_generates_an_error_response_for_unauthrozied(): void
     {
         $expectedOutput = [
             "errors" => [
@@ -86,7 +86,7 @@ class ResponseTest extends TestCase
         $this->assertEquals(401, $response->getStatusCode());
     }
 
-    public function test_it_generates_an_error_response_for_a_single_validation_error()
+    public function test_it_generates_an_error_response_for_a_single_validation_error(): void
     {
         $expectedOutput = [
             "errors" => [
@@ -107,7 +107,7 @@ class ResponseTest extends TestCase
         $this->assertEquals(422, $response->getStatusCode());
     }
 
-    public function test_it_generates_an_error_response_for_multiple_validation_errors()
+    public function test_it_generates_an_error_response_for_multiple_validation_errors(): void
     {
         $input = [
             'field1' => [
@@ -153,96 +153,112 @@ class ResponseTest extends TestCase
         $this->assertEquals(422, $response->getStatusCode());
     }
 
-    public function test_it_generates_a_generic_success_response()
+    public function test_it_generates_a_generic_no_content_response(): void
     {
-        $response = $this->response->success();
+        $response = $this->response->noContent();
         $this->assertEquals(204, $response->getStatusCode());
-        $this->assertEquals('', $response->getContent());
     }
 
-    public function test_it_generates_a_delete_successful_response()
-    {
-        $response = $this->response->deleteSuccessful();
-        $this->assertEquals(204, $response->getStatusCode());
-        $this->assertEquals('', $response->getContent());
-    }
-
-    public function test_it_generates_a_create_successful_response()
+    public function test_it_generates_a_create_successful_response(): void
     {
         $response = $this->response->createSuccessful();
         $this->assertEquals(201, $response->getStatusCode());
-        $this->assertEquals('', $response->getContent());
+        $this->assertEquals('null', $response->getContent());
     }
 
-    public function test_it_generates_a_create_successful_response_with_content()
+    public function test_it_generates_a_create_successful_response_with_content(): void
     {
         $expectedOutput = [
             'data' => [
                 'id'         => '1',
-                'type'       => 'test',
+                'type'       => 'tests',
                 'attributes' => [
                     'name' => 'Test Entity',
+                    'title' => 'vp',
                 ],
             ],
         ];
 
-        $entity   = new TestEntity(1, 'Test Entity');
-        $response = $this->response->createSuccessful($entity, new TestTransformer(), 'test');
+        $entity   = new TestEntity(1, 'Test Entity', 'vp');
+        $response = $this->response->createSuccessful($entity, new TestTransformer(), 'tests');
 
         $this->assertEquals($expectedOutput, json_decode($response->getContent(), true));
         $this->assertEquals(201, $response->getStatusCode());
     }
 
-    public function test_it_generates_an_entity_item_response()
+    public function test_it_generates_an_entity_item_response(): void
     {
         $expectedOutput = [
             'data' => [
                 'id'         => '1',
-                'type'       => 'test',
+                'type'       => 'tests',
                 'attributes' => [
                     'name' => 'Test Entity',
+                    'title' => 'vp',
                 ],
             ],
         ];
 
-        $entity   = new TestEntity(1, 'Test Entity');
-        $response = $this->response->withItem($entity, new TestTransformer(), 'test');
+        $entity   = new TestEntity(1, 'Test Entity', 'vp');
+        $response = $this->response->withItem($entity, new TestTransformer(), 'tests');
 
         $this->assertEquals($expectedOutput, json_decode($response->getContent(), true));
         $this->assertEquals(200, $response->getStatusCode());
     }
 
-    public function test_it_generates_an_entity_collection_response()
+    public function test_it_generates_a_json_resource_response(): void
+    {
+        $expectedOutput = [
+            'data' => [
+                'id'         => '1',
+                'type'       => 'tests',
+                'attributes' => [
+                    'name' => 'Test Entity',
+                    'title' => 'vp',
+                ],
+            ],
+        ];
+
+        $entity   = new TestEntity(1, 'Test Entity', 'vp');
+        $response = $this->response->withResourceItem($entity, new TestTransformer());
+
+        $this->assertEquals($expectedOutput, json_decode($response->getContent(), true));
+        $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    public function test_it_generates_an_entity_collection_response(): void
     {
         $expectedOutput = [
             'data' => [
                 [
                     'id'         => '1',
-                    'type'       => 'test',
+                    'type'       => 'tests',
                     'attributes' => [
                         'name' => 'Test Entity 1',
+                        'title' => 'vp',
                     ],
                 ],
                 [
                     'id'         => '2',
-                    'type'       => 'test',
+                    'type'       => 'tests',
                     'attributes' => [
                         'name' => 'Test Entity 2',
+                        'title' => 'ceo',
                     ],
                 ],
             ],
         ];
 
-        $entity1 = new TestEntity(1, 'Test Entity 1');
-        $entity2 = new TestEntity(2, 'Test Entity 2');
+        $entity1 = new TestEntity(1, 'Test Entity 1', 'vp');
+        $entity2 = new TestEntity(2, 'Test Entity 2', 'ceo');
 
-        $response = $this->response->withCollection([$entity1, $entity2], new TestTransformer(), 'test');
+        $response = $this->response->withCollection([$entity1, $entity2], new TestTransformer(), 'tests');
 
         $this->assertEquals($expectedOutput, json_decode($response->getContent(), true));
         $this->assertEquals(200, $response->getStatusCode());
     }
 
-    public function test_it_generates_a_response_for_an_http_exception()
+    public function test_it_generates_a_response_for_an_http_exception(): void
     {
         $expectedOutput = [
             "errors" => [

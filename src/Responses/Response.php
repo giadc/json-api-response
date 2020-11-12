@@ -1,23 +1,30 @@
 <?php
+
 namespace Giadc\JsonApiResponse\Responses;
 
 use Giadc\JsonApiRequest\Requests\RequestParams;
+use Giadc\JsonApiResponse\Fractal\ResourceTransformer;
+use Giadc\JsonApiResponse\Interfaces\JsonApiResource;
 use Giadc\JsonApiResponse\Interfaces\ResponseContract;
 use Giadc\JsonApiResponse\Pagination\FractalDoctrinePaginatorAdapter as PaginatorAdapter;
 use League\Fractal\Manager;
+use League\Fractal\Pagination\PaginatorInterface;
 use League\Fractal\Resource\Collection as FractalCollection;
 use League\Fractal\Resource\Item;
 use League\Fractal\Serializer\JsonApiSerializer;
+use League\Fractal\TransformerAbstract;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
-ini_set('xdebug.max_nesting_level', 200);
+ini_set('xdebug.max_nesting_level', '200');
 
 /**
- * Class Response
+ * Class Response.
  *
- * @package App\Http\Responses
+ * @template Entity
+ *
+ * @implements ResponseInterface<string|int, Entity>
  */
 class Response implements ResponseContract
 {
@@ -36,14 +43,12 @@ class Response implements ResponseContract
      */
     protected $requestParams;
 
-    /**
-     * @param Manager         $fractal
-     * @param ResponseFactory $response
-     * @param RequestParams   $requestParams
-     */
-    public function __construct(Manager $fractal, RequestParams $requestParams)
-    {
-        $this->fractal       = $fractal;
+
+    public function __construct(
+        Manager $fractal,
+        RequestParams $requestParams
+    ) {
+        $this->fractal = $fractal;
         $this->requestParams = $requestParams;
 
         $this->fractal->setSerializer(new JsonApiSerializer());
@@ -54,22 +59,17 @@ class Response implements ResponseContract
     }
 
     /**
-     * Returns current statusCode
-     *
-     * @return int
+     * {@inheritdoc}
      */
-    public function getStatusCode()
+    public function getStatusCode(): int
     {
         return $this->statusCode;
     }
 
     /**
-     * Sets status code
-     *
-     * @param $statusCode
-     * @return $this
+     * {@inheritdoc}
      */
-    public function setStatusCode($statusCode)
+    public function setStatusCode(int $statusCode): self
     {
         $this->statusCode = $statusCode;
 
@@ -77,29 +77,163 @@ class Response implements ResponseContract
     }
 
     /**
-     * Return a new JSON response from the application.
-     *
-     * @param array $array
-     * @param array $headers
-     * @return \Symfony\Component\HttpFoundation\Response
+     * {@inheritdoc}
      */
-    public function withArray(array $array, array $headers = array())
+    public function withArray(array $array, array $headers = []): JsonResponse
     {
         return new JsonResponse($array, $this->statusCode, $headers);
     }
 
     /**
-     * Return a new JSON error response from the application.
-     *
-     * @param $message
-     * @param $errorCode
-     * @return \Symfony\Component\HttpFoundation\Response
+     * {@inheritdoc}
      */
-    public function withError($message)
-    {
-        if ($this->statusCode === 200) {
-            trigger_error('Status set to 200..please try again.');
+    public function createSuccessful(
+        $entity = null,
+        TransformerAbstract $transformer = null,
+        string $resourceKey = '',
+        array $headers = []
+    ): SymfonyResponse {
+        $this->setStatusCode(201);
+
+        if (is_null($entity) || is_null($transformer)) {
+            $response = new JsonResponse(null, $this->getStatusCode(), $headers);
+            $response->setData(null);
+
+            return $response;
         }
+
+        if (is_array($entity)) {
+            /**
+             * @var array<Entity>
+             */
+            $collection = $entity;
+
+            return $this->withCollection(
+                $collection,
+                $transformer,
+                $resourceKey
+            );
+        }
+
+        return $this->withItem($entity, $transformer, $resourceKey, $headers);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function noContent(array $headers = []): JsonResponse
+    {
+        $response = new JsonResponse(null, 204, $headers);
+        $response->setData(null);
+
+        return $response;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function withResourceItem(
+        JsonApiResource $item,
+        ResourceTransformer $transformer,
+        array $headers = []
+    ): JsonResponse {
+        return $this->withItem(
+            $item,
+            $transformer,
+            $item::getResourceKey(),
+            $headers
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function withItem(
+        $item,
+        TransformerAbstract $transformer,
+        string $resourceKey,
+        array $headers = []
+    ): JsonResponse {
+        $resource = new Item($item, $transformer, $resourceKey);
+        $rootScope = $this->fractal->createData($resource);
+
+        return $this->withArray($rootScope->toArray(), $headers);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function withCollection(
+        $collection,
+        TransformerAbstract $transformer,
+        string $resourceKey = ''
+    ): SymfonyResponse {
+        $resource  = new FractalCollection($collection, $transformer, $resourceKey);
+        $rootScope = $this->fractal->createData($resource);
+
+        return $this->withArray($rootScope->toArray());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function withPagination(
+        $paginator,
+        TransformerAbstract $transformer,
+        string $resourceKey = ''
+    ): JsonResponse {
+        $collection = new FractalCollection(
+            $paginator,
+            $transformer,
+            $resourceKey
+        );
+
+        if ($paginator instanceof PaginatorInterface) {
+            $collection->setPaginator($paginator);
+        } else {
+            $collection->setPaginator(
+                new PaginatorAdapter($paginator, $this->requestParams)
+            );
+        }
+
+        $rootScope = $this->fractal->createData($collection);
+
+        return $this->withArray($rootScope->toArray());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function withHttpException(
+        HttpExceptionInterface $httpException
+    ): JsonResponse {
+        $response = new JsonResponse([], $httpException->getStatusCode());
+        $statusText =
+            JsonResponse::$statusTexts[$httpException->getStatusCode()];
+
+        $data = [
+            'errors' => [
+                [
+                    'code' => $this->getErrorCode(
+                        $httpException->getStatusCode()
+                    ),
+                    'status' => $httpException->getStatusCode(),
+                    'detail' => $httpException->getMessage() ?: $statusText,
+                ],
+            ],
+        ];
+
+        $response->setData($data);
+
+        return $response;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function withError(string $message): JsonResponse
+    {
+        $this->confirmErrorStatusCode();
 
         return $this->withArray(array(
             'errors' => array(
@@ -113,16 +247,11 @@ class Response implements ResponseContract
     }
 
     /**
-     * Returns a new JSON response with multiple errors
-     *
-     * @param  array $errors
-     * @return \Symfony\Component\HttpFoundation\Response
+     * {@inheritdoc}
      */
-    public function withErrors($errors)
+    public function withErrors(array $errors): JsonResponse
     {
-        if ($this->statusCode === 200) {
-            trigger_error('Status set to 200..please try again.');
-        }
+        $this->confirmErrorStatusCode();
 
         return $this->withArray(array(
             'errors' => $errors,
@@ -130,197 +259,44 @@ class Response implements ResponseContract
     }
 
     /**
-     * Return a new Delete Successful Response form application
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * {@inheritdoc}
      */
-    public function deleteSuccessful()
-    {
-        return $this->success();
-    }
-
-    /**
-     * Return a new Create Successful Response form application
-     *
-     * @param  array $headers
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function createSuccessful($entity = null, $callback = null, $resourceKey = '', array $headers = [])
-    {
-        $this->setStatusCode(201);
-
-        if (is_null($entity)) {
-            return new HttpResponse('', $this->statusCode, $headers);
-        }
-
-        return $this->withItem($entity, $callback, $resourceKey, $headers);
-    }
-
-    /**
-     * Return a new Update Successful Response form application
-     *
-     * @param  array $headers
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function updateSuccessful(array $headers = array())
-    {
-        return $this->success($headers);
-    }
-
-    /**
-     * Returns with null data
-     *
-     * @param  array $headers
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function withNull(array $headers = array())
-    {
-        $this->setStatusCode(200);
-        $json = json_decode('{"data": null}');
-
-        return new JsonResponse($json, $this->statusCode, $headers);
-    }
-
-    /**
-     * Returns a 204 no content
-     *
-     * @param  array $headers
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function success(array $headers = array())
-    {
-        $this->setStatusCode(204);
-
-        return new HttpResponse('', $this->statusCode, $headers);
-    }
-
-    /**
-     * Return a new JSON response from an item
-     *
-     * @param mixed  $item
-     * @param mixed  $callback
-     * @param string $resourceKey
-     * @param array  $headers
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function withItem($item, $callback, $resourceKey = '', $headers = [])
-    {
-        $resource  = new Item($item, $callback, $resourceKey);
-        $rootScope = $this->fractal->createData($resource);
-
-        return $this->withArray($rootScope->toArray(), $headers);
-    }
-
-    /**
-     * Return a new JSON response from a collection
-     *
-     * @param $collection
-     * @param $callback
-     * @param string $resourceKey
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function withCollection($collection, $callback, $resourceKey = '')
-    {
-        $resource  = new FractalCollection($collection, $callback, $resourceKey);
-        $rootScope = $this->fractal->createData($resource);
-
-        return $this->withArray($rootScope->toArray());
-    }
-
-    /**
-     * Return a new JSON response from a paginated collection
-     *
-     * @param $paginator
-     * @param $callback
-     * @param string $resourceKey
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function withPagination($paginator, $callback, $resourceKey = '')
-    {
-        $resource = new FractalCollection($paginator, $callback, $resourceKey);
-        $resource->setPaginator(new PaginatorAdapter($paginator, $this->requestParams));
-        $rootScope = $this->fractal->createData($resource);
-
-        return $this->withArray($rootScope->toArray());
-    }
-
-    /**
-     * Return a new JSON response from a HttpException
-     *
-     * @param  HttpExceptionInterface $httpException
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function withHttpException(HttpExceptionInterface $httpException)
-    {
-        $response   = new JsonResponse([], $httpException->getStatusCode());
-        $statusText = JsonResponse::$statusTexts[$httpException->getStatusCode()];
-
-        $data = array(
-            "errors" => array(
-                array(
-                    'code'   => $this->getErrorCode($httpException->getStatusCode()),
-                    'status' => $httpException->getStatusCode(),
-                    'detail' => $httpException->getMessage() ?: $statusText,
-                ),
-            ),
-        );
-
-        $response->setData($data);
-
-        return $response;
-    }
-
-    /**
-     * Return a new JSON response forbidden error
-     *
-     * @param string $message
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function errorForbidden($message = 'Forbidden')
+    public function errorForbidden(string $message = 'Forbidden'): JsonResponse
     {
         return $this->setStatusCode(403)->withError($message);
     }
 
     /**
-     * Return a new JSON response internal error
-     *
-     * @param string $message
-     * @return \Symfony\Component\HttpFoundation\Response
+     * {@inheritdoc}
      */
-    public function errorInternalError($message = 'Internal Error')
+    public function errorInternalError(string $message = 'Internal Error'): JsonResponse
     {
         return $this->setStatusCode(500)->withError($message);
     }
 
     /**
-     * @param string $message
-     * @return \Symfony\Component\HttpFoundation\Response
+     * {@inheritdoc}
      */
-    public function errorNotFound($message = 'Not Found')
+    public function errorNotFound(string $message = 'Not Found'): JsonResponse
     {
         return $this->setStatusCode(404)->withError($message);
     }
 
     /**
-     * Return a new JSON response unauthorized
-     *
-     * @param string $message
-     * @return \Symfony\Component\HttpFoundation\Response
+     * {@inheritdoc}
      */
-    public function errorUnauthorized($message = 'Unauthorized')
+    public function errorUnauthorized(string $message = 'Unauthorized'): JsonResponse
     {
         return $this->setStatusCode(401)->withError($message);
     }
 
     /**
-     * Return a new JSON response Validation error
-     *
-     * @param string $message
-     * @param string $field
-     * @return \Symfony\Component\HttpFoundation\Response
+     * {@inheritdoc}
      */
-    public function errorValidation($message = 'Validation Error', $field = null)
-    {
+    public function errorValidation(
+        string $message = 'Validation Error',
+        string $field = null
+    ): JsonResponse {
         $error = array(
             'code'   => "VALIDATION_ERROR",
             'status' => 422,
@@ -339,19 +315,9 @@ class Response implements ResponseContract
     }
 
     /**
-     * Returns a new JSON response with multiple validation errors.
-     * $errors should be passed as an array whose keys are the names of the inputs and whose
-     * values are the errors associated with that input. For example:
-     *
-     *  [
-     *      'name' => ['name is too short', 'name should be capitalized'],
-     *      'email' => ['email should be a valid email'],
-     *  ]
-     *
-     * @param  array $messages
-     * @return \Symfony\Component\HttpFoundation\Response
+     * {@inheritdoc}
      */
-    public function errorsValidation($messages)
+    public function errorsValidation(array $messages): JsonResponse
     {
         $errorObjects = array_map(function ($field, $errors) {
             return array_map(function ($error) use ($field) {
@@ -372,25 +338,33 @@ class Response implements ResponseContract
     }
 
     /**
-     * Return a new JSON response not searchable
-     *
-     * @param string $message
-     * @return \Symfony\Component\HttpFoundation\Response
+     * {@inheritdoc}
      */
-    public function errorNotSearchable($message = 'Not Searchable')
+    public function errorNotSearchable(string $message = 'Not Searchable'): JsonResponse
     {
         return $this->setStatusCode(403)->withError($message);
     }
 
     /**
-     * Get the error code for the given status code
-     *
-     * @param  int $statusCode
-     * @return string
+     * Get the error code for the given status code.
      */
-    private function getErrorCode($statusCode)
+    protected function getErrorCode(int $statusCode): string
     {
+        /**
+         * @var string
+         */
         $statusText = JsonResponse::$statusTexts[$statusCode];
+
         return strtoupper(str_replace(' ', '_', $statusText));
+    }
+
+    /**
+     * Confirms appropriate StatusCode for an error.
+     */
+    protected function confirmErrorStatusCode(): void
+    {
+        if ($this->statusCode < 400) {
+            trigger_error('Status should be greater than 400 for errors!');
+        }
     }
 }

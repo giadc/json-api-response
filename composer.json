@@ -13,8 +13,8 @@
         }
     ],
     "require": {
-        "giadc/json-api-request": "^1.2.0",
-        "league/fractal": "~0.1",
+        "giadc/json-api-request": "dev-f-double-qoute-improvements-double-quote",
+        "league/fractal": "^0.19.2",
         "symfony/http-kernel": "^3.4|^4.0|^5.0"
     },
     "require-dev": {
@@ -25,6 +25,11 @@
         "psr-4": {
             "Giadc\\JsonApiResponse\\": "src/"
         }
+    },
+    "autoload-dev": {
+        "classmap": [
+            "tests/"
+        ]
     },
     "config": {
         "optimize-autoloader": true,
