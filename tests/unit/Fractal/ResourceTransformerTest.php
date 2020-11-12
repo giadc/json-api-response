@@ -63,19 +63,18 @@ class ResourceTransformerTest extends TestCase
 
     public function test_it_throws_exception_when_providing_invalid_fields(): void
     {
-        try {
-            $request = Request::create(
-                'http://test.com/articles'
-                    . '?fields[tests]=name,ketchup'
-            );
+        $this->expectException(InvalidAttributesRequested::class);
+        $this->expectExceptionMessage('Invalid Attribute Requested: ketchup. Valid keys are id, name, title.');
 
-            $transformer = new TestTransformer($request);
-            $testEntity = new TestEntity(1, 'name');
+        $request = Request::create(
+            'http://test.com/articles'
+                . '?fields[tests]=name,ketchup'
+        );
 
-            $transformer->transform($testEntity);
-        } catch (\Exception $e) {
-            $this->assertInstanceOf(InvalidAttributesRequested::class, $e);
-            $this->assertEquals('Invalid Attribute Requested: ketchup. Valid keys are id, name, title.', $e->getMessage());
-        }
+        $transformer = new TestTransformer($request);
+        $testEntity = new TestEntity(1, 'name');
+
+        $transformer->transform($testEntity);
+
     }
 }
