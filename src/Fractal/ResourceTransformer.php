@@ -15,7 +15,7 @@ abstract class ResourceTransformer extends TransformerAbstract
     protected array $defaultFields = [];
 
     /**
-     * @var AbstractDataModifier[]
+     * @phpstan-var AbstractDataModifier[]
      */
     protected array $dataProcessors = [
         FieldsModifier::class,

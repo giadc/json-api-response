@@ -9,8 +9,5 @@ interface JsonApiResource extends \JsonSerializable
      */
     public static function getResourceKey(): string;
 
-    /**
-     * @return int|string
-     */
-    public function id();
+    public function id(): int|string;
 }
