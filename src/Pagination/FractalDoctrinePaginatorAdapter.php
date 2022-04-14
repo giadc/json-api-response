@@ -1,4 +1,5 @@
 <?php
+
 namespace Giadc\JsonApiResponse\Pagination;
 
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -10,10 +11,8 @@ class FractalDoctrinePaginatorAdapter implements PaginatorInterface, PaginatorCo
 {
     /**
      * The paginator instance.
-     *
-     * @var \Doctrine\ORM\Tools\Pagination\Paginator
      */
-    protected $paginator;
+    protected Paginator $paginator;
 
     /**
      * The route generator.
@@ -24,18 +23,11 @@ class FractalDoctrinePaginatorAdapter implements PaginatorInterface, PaginatorCo
 
     /**
      * The RequestParams instance.
-     *
-     * @var RequestParams
      */
-    protected $requestParams;
+    protected RequestParams $requestParams;
 
     /**
      * Create a new doctrine pagination adapter.
-     *
-     * @param Paginator $paginator
-     * @param RequestParams $requestParams
-     *
-     * @return void
      */
     public function __construct(Paginator $paginator, RequestParams $requestParams)
     {
@@ -45,10 +37,8 @@ class FractalDoctrinePaginatorAdapter implements PaginatorInterface, PaginatorCo
 
     /**
      * Get the current page.
-     *
-     * @return int
      */
-    public function getCurrentPage()
+    public function getCurrentPage(): int
     {
         $paginator = $this->request->getPageDetails();
         return $paginator->getPageNumber();
@@ -56,10 +46,8 @@ class FractalDoctrinePaginatorAdapter implements PaginatorInterface, PaginatorCo
 
     /**
      * Get the last page.
-     *
-     * @return int
      */
-    public function getLastPage()
+    public function getLastPage(): int
     {
         $paginator = $this->request->getPageDetails();
         $resultsPerPage = $paginator->getPageSize();
@@ -69,20 +57,16 @@ class FractalDoctrinePaginatorAdapter implements PaginatorInterface, PaginatorCo
 
     /**
      * Get the total.
-     *
-     * @return int
      */
-    public function getTotal()
+    public function getTotal(): int
     {
         return count($this->paginator);
     }
 
     /**
      * Get the count.
-     *
-     * @return int
      */
-    public function getCount()
+    public function getCount(): int
     {
         if ($this->getPerPage() > $this->getTotal())
             return $this->getTotal();
@@ -92,10 +76,8 @@ class FractalDoctrinePaginatorAdapter implements PaginatorInterface, PaginatorCo
 
     /**
      * Get the number per page.
-     *
-     * @return int
      */
-    public function getPerPage()
+    public function getPerPage(): int
     {
         $paginator = $this->request->getPageDetails();
         return $paginator->getPageSize();
@@ -103,12 +85,8 @@ class FractalDoctrinePaginatorAdapter implements PaginatorInterface, PaginatorCo
 
     /**
      * Get the url for the given page.
-     *
-     * @param int $page
-     *
-     * @return string
      */
-    public function getUrl($page)
+    public function getUrl(int $page): string
     {
         $url = $this->request->getUri();
         $params = $this->request->getQueryString($page);
@@ -118,10 +96,8 @@ class FractalDoctrinePaginatorAdapter implements PaginatorInterface, PaginatorCo
 
     /**
      * Get the paginator instance.
-     *
-     * @return \Doctrine\ORMTools\Pagination\Paginator
      */
-    public function getPaginator()
+    public function getPaginator(): Paginator
     {
         return $this->paginator;
     }

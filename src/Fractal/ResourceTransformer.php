@@ -12,11 +12,10 @@ abstract class ResourceTransformer extends TransformerAbstract
 {
     protected RequestParams $requestParams;
 
+    /** @phpstan-var string[] */
     protected array $defaultFields = [];
 
-    /**
-     * @phpstan-var AbstractDataModifier[]
-     */
+    /** @phpstan-var array<class-string<AbstractDataModifier>> */
     protected array $dataProcessors = [
         FieldsModifier::class,
         ExcludeModifier::class,
@@ -30,7 +29,7 @@ abstract class ResourceTransformer extends TransformerAbstract
     abstract public static function resourceName(): string;
 
     /**
-     * @return array<string, mixed>
+     * @phpstan-return array<string, mixed>
      */
     public function transform(JsonApiResource $resource): array
     {
@@ -42,7 +41,7 @@ abstract class ResourceTransformer extends TransformerAbstract
     /**
      * Setter for defaultFields.
      *
-     * @param array<string> $defaultFields
+     * @phpstan-param string[] $defaultFields
      */
     public function setDefaultFields(array $defaultFields): self
     {
@@ -51,6 +50,9 @@ abstract class ResourceTransformer extends TransformerAbstract
         return $this;
     }
 
+    /**
+     * @phpstan-return array<string, mixed>
+     */
     protected function processFieldsWithRequest(JsonApiResource $resource): array
     {
         $data = $resource->jsonSerialize();
@@ -85,7 +87,7 @@ abstract class ResourceTransformer extends TransformerAbstract
     {
         if (!$resource instanceof $resourceName) {
             throw new \Exception(
-                'Argument $resource should be an instance of ' . self::resourceName()
+                'Argument $resource should be an instance of ' . static::resourceName()
             );
         }
 

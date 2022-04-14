@@ -9,8 +9,10 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
- * @template TKey
- * @template Entity
+ * @template TKey of string|int
+ * @template Entity of object
+ *
+ * @phpstan-type Headers array<string,array<string>>
  */
 interface ResponseContract
 {
@@ -27,7 +29,7 @@ interface ResponseContract
      * Return a new JSON response from the application.
      *
      * @phpstan-param array<mixed> $array
-     * @phpstan-param array<string,array<string>> $headers
+     * @phpstan-param Headers $headers
      */
     public function withArray(array $array, array $headers = []): JsonResponse;
 
@@ -40,7 +42,7 @@ interface ResponseContract
      * Return a new Create Successful Response form application.
      *
      * @phpstan-param array<Entity>|\Doctrine\Common\Collections\Collection<TKey, Entity>|Entity|null $entity
-     * @phpstan-param array<string,array<string>> $headers
+     * @phpstan-param Headers $headers
      */
     public function createSuccessful(
         mixed $entity = null,
@@ -49,13 +51,14 @@ interface ResponseContract
         array $headers = []
     ): SymfonyResponse;
 
-    /*
+    /**
      * Return a new JSON response from an item
      *
-     * @phpstan-param array<string,array<string>> $headers
+     * @phpstan-param Entity $item
+     * @phpstan-param Headers $headers
      */
     public function withItem(
-        mixed $item,
+        object $item,
         TransformerAbstract $transformer,
         string $resourceKey,
         array $headers = []
@@ -64,7 +67,8 @@ interface ResponseContract
     /**
      * Return a new JSON response from an item.
      *
-     * @phpstan-param array<string,array<string>> $headers
+     * @phpstan-param JsonApiResource&Entity $item
+     * @phpstan-param Headers $headers
      */
     public function withResourceItem(
         JsonApiResource $item,
@@ -76,28 +80,41 @@ interface ResponseContract
      * Return a new JSON response from a collection.
      *
      * @phpstan-param array<Entity>|\Doctrine\Common\Collections\Collection<TKey, Entity> $collection
+     * @phpstan-param Headers $headers
      */
     public function withCollection(
         mixed $collection,
         TransformerAbstract $transformer,
-        string $resourceKey = ''
+        string $resourceKey = '',
+        array $headers = []
     ): SymfonyResponse;
+
+    /**
+     * Return a new JSON response of Errors. StatusCode must be
+     * a valid Http Error Code.
+     *
+     * @phpstan-param array<mixed> $errors
+     */
+    public function withErrors(array $errors): JsonResponse;
 
     /**
      * Returns a 204 no content.
      *
-     * @phpstan-param array<string,array<string>> $headers
+     * @phpstan-param Headers $headers
      */
     public function noContent(array $headers = []): JsonResponse;
+
     /**
      * Return a new JSON response from a paginated collection.
      *
-     * @phpstan-param \Doctrine\ORM\Tools\Pagination\Paginator<Entity> | \Giadc\OAuth2\Common\PaginatedCollection<Entity> $paginator
+     * @phpstan-param \Doctrine\ORM\Tools\Pagination\Paginator<Entity> $paginator
+     * @phpstan-param Headers $headers
      */
     public function withPagination(
         mixed $paginator,
         TransformerAbstract $transformer,
-        string $resourceKey = ''
+        string $resourceKey = '',
+        array $headers = []
     ): JsonResponse;
 
     /**
