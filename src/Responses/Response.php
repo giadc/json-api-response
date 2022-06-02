@@ -10,10 +10,8 @@ use Giadc\JsonApiResponse\Exceptions\FractalNullDataException;
 use Giadc\JsonApiResponse\Fractal\ResourceTransformer;
 use Giadc\JsonApiResponse\Interfaces\JsonApiResource;
 use Giadc\JsonApiResponse\Interfaces\ResponseContract;
-use Giadc\JsonApiResponse\Pagination\FractalDoctrinePaginatorAdapter as PaginatorAdapter;
 use InvalidArgumentException;
 use League\Fractal\Manager;
-use League\Fractal\Pagination\PaginatorInterface;
 use League\Fractal\Resource\Collection as FractalCollection;
 use League\Fractal\Resource\Item;
 use League\Fractal\Serializer\JsonApiSerializer;
@@ -159,7 +157,7 @@ class Response implements ResponseContract
      * {@inheritdoc}
      */
     public function withCollection(
-        $collection,
+        array|Collection $collection,
         TransformerAbstract $transformer,
         string $resourceKey = '',
         array $headers = []
@@ -168,35 +166,6 @@ class Response implements ResponseContract
 
         return $this->withArray(
             $this->createFractalDataArray($resource),
-            $headers
-        );
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function withPagination(
-        $paginator,
-        TransformerAbstract $transformer,
-        string $resourceKey = '',
-        array $headers = []
-    ): JsonResponse {
-        $collection = new FractalCollection(
-            $paginator,
-            $transformer,
-            $resourceKey
-        );
-
-        if ($paginator instanceof PaginatorInterface) {
-            $collection->setPaginator($paginator);
-        } else {
-            $collection->setPaginator(
-                new PaginatorAdapter($paginator, $this->requestParams)
-            );
-        }
-
-        return $this->withArray(
-            $this->createFractalDataArray($collection),
             $headers
         );
     }
