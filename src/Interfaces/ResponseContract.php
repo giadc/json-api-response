@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Giadc\JsonApiResponse\Interfaces;
 
 use Doctrine\Common\Collections\Collection;
 use Giadc\JsonApiResponse\Fractal\ResourceTransformer;
+use Giadc\JsonApiResponse\Pagination\PaginatedCollection;
 use League\Fractal\TransformerAbstract;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -104,6 +107,19 @@ interface ResponseContract
      * @phpstan-param Headers $headers
      */
     public function noContent(array $headers = []): JsonResponse;
+
+    /**
+     * Return a new JSON response from a paginated collection.
+     *
+     * @phpstan-param PaginatedCollection<string|int, Entity> $paginator
+     * @phpstan-param Headers $headers
+     */
+    public function withPaginatedCollection(
+        PaginatedCollection $paginatedCollection,
+        TransformerAbstract $transformer,
+        string $resourceKey = '',
+        array $headers = []
+    ): JsonResponse;
 
     /**
      * Return a new JSON response from a HttpException.

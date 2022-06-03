@@ -44,6 +44,7 @@ $response->withItem( $item, TransformerAbstract $transformer, string $resourceKe
 $response->withResourceItem( JsonApiResource $item, ResourceTransformer $transformer, array $headers = []): JsonResponse;
 $response->withCollection( $collection, TransformerAbstract $transformer, string $resourceKey = ''): SymfonyResponse;
 $response->noContent(array $headers = []): JsonResponse;
+$response->withPaginatedCollection(PaginatedCollection $paginator, TransformerAbstract $transformer, string $resourceKey = ''): JsonResponse;
 $response->withHttpException( HttpExceptionInterface $httpException): JsonResponse;
 $response->errorForbidden(string $message = 'Forbidden'): JsonResponse;
 $response->errorInternalError(string $message = 'Internal Error'): JsonResponse;
@@ -55,7 +56,7 @@ $response->errorNotSearchable(string $message = 'Not Searchable'): JsonResponse;
 ```
 
 ## Fractal Transformers
-The GIADC JSON Response packages uses `league/fractal` for the `withItem()`, `withCollection()` responses. 
+The GIADC JSON Response packages uses `league/fractal` for the `withItem()`, `withCollection()`, & `withPaginatedCollection()` responses. 
 See [Fractal's documentation](http://fractal.thephpleague.com/transformers) for more information regarding Transformers.
 
 ## ResourceTransformer

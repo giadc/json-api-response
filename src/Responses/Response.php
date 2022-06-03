@@ -10,6 +10,7 @@ use Giadc\JsonApiResponse\Exceptions\FractalNullDataException;
 use Giadc\JsonApiResponse\Fractal\ResourceTransformer;
 use Giadc\JsonApiResponse\Interfaces\JsonApiResource;
 use Giadc\JsonApiResponse\Interfaces\ResponseContract;
+use Giadc\JsonApiResponse\Pagination\PaginatedCollection;
 use InvalidArgumentException;
 use League\Fractal\Manager;
 use League\Fractal\Resource\Collection as FractalCollection;
@@ -166,6 +167,26 @@ class Response implements ResponseContract
 
         return $this->withArray(
             $this->createFractalDataArray($resource),
+            $headers
+        );
+    }
+
+    public function withPaginatedCollection(
+        PaginatedCollection $paginatedCollection,
+        TransformerAbstract $transformer,
+        string $resourceKey = '',
+        array $headers = []
+    ): JsonResponse {
+        $collection = new FractalCollection(
+            $paginatedCollection->toArray(),
+            $transformer,
+            $resourceKey
+        );
+
+        $collection->setPaginator($paginatedCollection->paginator());
+
+        return $this->withArray(
+            $this->createFractalDataArray($collection),
             $headers
         );
     }
