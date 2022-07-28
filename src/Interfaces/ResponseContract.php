@@ -13,9 +13,6 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
- * @template TKey of string|int
- * @template Entity of object
- *
  * @phpstan-type Headers array<string,array<string>>
  */
 interface ResponseContract
@@ -24,10 +21,8 @@ interface ResponseContract
 
     /**
      * Sets status code.
-     *
-     * @phpstan-return self<TKey, Entity>
      */
-    public function setStatusCode(int $statusCode);
+    public function setStatusCode(int $statusCode): self;
 
     /**
      * Return a new JSON response from the application.
@@ -45,7 +40,8 @@ interface ResponseContract
     /**
      * Return a new Create Successful Response form application.
      *
-     * @phpstan-param array<Entity>|\Doctrine\Common\Collections\Collection<TKey, Entity>|Entity|null $entity
+     * @phpstan-template Entity of object
+     * @phpstan-param array<Entity>|\Doctrine\Common\Collections\Collection<int|string, Entity>|Entity|null $entity
      * @phpstan-param Headers $headers
      */
     public function createSuccessful(
@@ -58,6 +54,7 @@ interface ResponseContract
     /**
      * Return a new JSON response from an item
      *
+     * @phpstan-template Entity of object
      * @phpstan-param Entity $item
      * @phpstan-param Headers $headers
      */
@@ -71,7 +68,7 @@ interface ResponseContract
     /**
      * Return a new JSON response from an item.
      *
-     * @phpstan-param JsonApiResource&Entity $item
+     * @phpstan-param JsonApiResource $item
      * @phpstan-param Headers $headers
      */
     public function withResourceItem(
@@ -83,7 +80,8 @@ interface ResponseContract
     /**
      * Return a new JSON response from a collection.
      *
-     * @phpstan-param array<Entity>|Collection<TKey, Entity> $collection
+     * @phpstan-template Entity of object
+     * @phpstan-param array<Entity>|Collection<int|string, Entity> $collection
      * @phpstan-param Headers $headers
      */
     public function withCollection(
@@ -111,7 +109,8 @@ interface ResponseContract
     /**
      * Return a new JSON response from a paginated collection.
      *
-     * @phpstan-param PaginatedCollection<string|int, Entity> $paginator
+     * @phpstan-template Entity of object
+     * @phpstan-param PaginatedCollection<string|int, Entity> $paginatedCollection
      * @phpstan-param Headers $headers
      */
     public function withPaginatedCollection(

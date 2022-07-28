@@ -26,9 +26,7 @@ ini_set('xdebug.max_nesting_level', '200');
 /**
  * Class Response.
  *
- * @template Entity of object
  * @phpstan-import-type Headers from ResponseContract
- * @implements ResponseContract<string|int, Entity>
  */
 class Response implements ResponseContract
 {
@@ -61,7 +59,7 @@ class Response implements ResponseContract
     }
 
     /**
-     * @phpstan-return self<Entity>
+     * {@inheritdoc}
      */
     public function setStatusCode(int $statusCode): self
     {
@@ -123,7 +121,7 @@ class Response implements ResponseContract
     /**
      * {@inheritdoc}
      *
-     * @phpstan-param JsonApiResource&Entity $item
+     * @phpstan-param JsonApiResource $item
      */
     public function withResourceItem(
         JsonApiResource $item,
