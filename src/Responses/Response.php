@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Giadc\JsonApiResponse\Responses;
 
+use Doctrine\Common\Collections\Collection;
 use Giadc\JsonApiRequest\Requests\RequestParams;
+use Giadc\JsonApiResponse\Exceptions\FractalNullDataException;
 use Giadc\JsonApiResponse\Fractal\ResourceTransformer;
 use Giadc\JsonApiResponse\Interfaces\JsonApiResource;
 use Giadc\JsonApiResponse\Interfaces\ResponseContract;
-use Giadc\JsonApiResponse\Pagination\FractalDoctrinePaginatorAdapter as PaginatorAdapter;
+use Giadc\JsonApiResponse\Pagination\PaginatedCollection;
+use InvalidArgumentException;
 use League\Fractal\Manager;
-use League\Fractal\Pagination\PaginatorInterface;
 use League\Fractal\Resource\Collection as FractalCollection;
 use League\Fractal\Resource\Item;
 use League\Fractal\Serializer\JsonApiSerializer;
@@ -22,27 +26,15 @@ ini_set('xdebug.max_nesting_level', '200');
 /**
  * Class Response.
  *
- * @template Entity
- *
- * @implements ResponseInterface<string|int, Entity>
+ * @phpstan-import-type Headers from ResponseContract
  */
 class Response implements ResponseContract
 {
-    /**
-     * @var int
-     */
-    protected $statusCode = 200;
+    protected int $statusCode = 200;
 
-    /**
-     * @var Manager
-     */
-    public $fractal;
+    public Manager $fractal;
 
-    /**
-     * @var RequestParams
-     */
-    protected $requestParams;
-
+    protected RequestParams $requestParams;
 
     public function __construct(
         Manager $fractal,
@@ -88,7 +80,7 @@ class Response implements ResponseContract
      * {@inheritdoc}
      */
     public function createSuccessful(
-        $entity = null,
+        mixed $entity = null,
         TransformerAbstract $transformer = null,
         string $resourceKey = '',
         array $headers = []
@@ -102,10 +94,7 @@ class Response implements ResponseContract
             return $response;
         }
 
-        if (is_array($entity)) {
-            /**
-             * @var array<Entity>
-             */
+        if (is_array($entity) || $entity instanceof Collection) {
             $collection = $entity;
 
             return $this->withCollection(
@@ -131,6 +120,8 @@ class Response implements ResponseContract
 
     /**
      * {@inheritdoc}
+     *
+     * @phpstan-param JsonApiResource $item
      */
     public function withResourceItem(
         JsonApiResource $item,
@@ -149,56 +140,53 @@ class Response implements ResponseContract
      * {@inheritdoc}
      */
     public function withItem(
-        $item,
+        object $item,
         TransformerAbstract $transformer,
         string $resourceKey,
         array $headers = []
     ): JsonResponse {
         $resource = new Item($item, $transformer, $resourceKey);
-        $rootScope = $this->fractal->createData($resource);
-
-        return $this->withArray($rootScope->toArray(), $headers);
+        return $this->withArray(
+            $this->createFractalDataArray($resource),
+            $headers
+        );
     }
 
     /**
      * {@inheritdoc}
      */
     public function withCollection(
-        $collection,
+        array|Collection $collection,
         TransformerAbstract $transformer,
-        string $resourceKey = ''
+        string $resourceKey = '',
+        array $headers = []
     ): SymfonyResponse {
         $resource  = new FractalCollection($collection, $transformer, $resourceKey);
-        $rootScope = $this->fractal->createData($resource);
 
-        return $this->withArray($rootScope->toArray());
+        return $this->withArray(
+            $this->createFractalDataArray($resource),
+            $headers
+        );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function withPagination(
-        $paginator,
+    public function withPaginatedCollection(
+        PaginatedCollection $paginatedCollection,
         TransformerAbstract $transformer,
-        string $resourceKey = ''
+        string $resourceKey = '',
+        array $headers = []
     ): JsonResponse {
         $collection = new FractalCollection(
-            $paginator,
+            $paginatedCollection->toArray(),
             $transformer,
             $resourceKey
         );
 
-        if ($paginator instanceof PaginatorInterface) {
-            $collection->setPaginator($paginator);
-        } else {
-            $collection->setPaginator(
-                new PaginatorAdapter($paginator, $this->requestParams)
-            );
-        }
+        $collection->setPaginator($paginatedCollection->paginator());
 
-        $rootScope = $this->fractal->createData($collection);
-
-        return $this->withArray($rootScope->toArray());
+        return $this->withArray(
+            $this->createFractalDataArray($collection),
+            $headers
+        );
     }
 
     /**
@@ -248,6 +236,7 @@ class Response implements ResponseContract
 
     /**
      * {@inheritdoc}
+     * @phpstan-param array<mixed> $errors
      */
     public function withErrors(array $errors): JsonResponse
     {
@@ -366,5 +355,23 @@ class Response implements ResponseContract
         if ($this->statusCode < 400) {
             trigger_error('Status should be greater than 400 for errors!');
         }
+    }
+
+    /**
+     * @phpstan-return array<mixed>
+     * @throws InvalidArgumentException
+     * @throws FractalNullDataException
+     */
+    private function createFractalDataArray(
+        FractalCollection|Item $resource,
+        string $resourceKey = ''
+    ): array {
+        $array = $this->fractal->createData($resource)->toArray();
+
+        if (!$array) {
+            throw new FractalNullDataException($resourceKey);
+        }
+
+        return $array;
     }
 }

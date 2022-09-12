@@ -6,13 +6,13 @@ use Giadc\JsonApiResponse\Interfaces\JsonApiResource;
 
 class TestEntity implements JsonApiResource
 {
-    private $id;
+    private int|string $id;
 
     private string $name;
 
     private string $title;
 
-    public function __construct($id, $name, $title = 'asdf')
+    public function __construct($id, string $name, string $title = 'asdf')
     {
         $this->id   = $id;
         $this->name = $name;
@@ -22,7 +22,7 @@ class TestEntity implements JsonApiResource
     /**
      * {@inheritDoc}
      */
-    public function id()
+    public function id(): int|string
     {
         return $this->id;
     }
@@ -40,7 +40,7 @@ class TestEntity implements JsonApiResource
     /**
      * {@inheritDoc}
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return [
             'id' => $this->id,

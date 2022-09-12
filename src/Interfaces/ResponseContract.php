@@ -1,36 +1,34 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Giadc\JsonApiResponse\Interfaces;
 
+use Doctrine\Common\Collections\Collection;
 use Giadc\JsonApiResponse\Fractal\ResourceTransformer;
+use Giadc\JsonApiResponse\Pagination\PaginatedCollection;
 use League\Fractal\TransformerAbstract;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
- * @template TKey
- * @template Entity
+ * @phpstan-type Headers array<string,array<string>>
  */
 interface ResponseContract
 {
-    /*
-     * Returns current statusCode
-     */
     public function getStatusCode(): int;
 
     /**
      * Sets status code.
-     *
-     * @return self<TKey, Entity>
      */
-    public function setStatusCode(int $statusCode);
+    public function setStatusCode(int $statusCode): self;
 
     /**
      * Return a new JSON response from the application.
      *
-     * @param array<mixed> $array
-     * @param array<string,array<string>> $headers
+     * @phpstan-param array<mixed> $array
+     * @phpstan-param Headers $headers
      */
     public function withArray(array $array, array $headers = []): JsonResponse;
 
@@ -42,24 +40,26 @@ interface ResponseContract
     /**
      * Return a new Create Successful Response form application.
      *
-     * @param array<Entity>|\Doctrine\Common\Collections\Collection<TKey, Entity>|Entity|null $entity
-     * @param array<string,array<string>> $headers
+     * @phpstan-template Entity of object
+     * @phpstan-param array<Entity>|\Doctrine\Common\Collections\Collection<int|string, Entity>|Entity|null $entity
+     * @phpstan-param Headers $headers
      */
     public function createSuccessful(
-        $entity = null,
+        mixed $entity = null,
         TransformerAbstract $transformer = null,
         string $resourceKey = '',
         array $headers = []
     ): SymfonyResponse;
 
-    /*
+    /**
      * Return a new JSON response from an item
      *
-     * @param mixed $item
-     * @param array<string,array<string>> $headers
+     * @phpstan-template Entity of object
+     * @phpstan-param Entity $item
+     * @phpstan-param Headers $headers
      */
     public function withItem(
-        $item,
+        object $item,
         TransformerAbstract $transformer,
         string $resourceKey,
         array $headers = []
@@ -68,7 +68,8 @@ interface ResponseContract
     /**
      * Return a new JSON response from an item.
      *
-     * @param array<string,array<string>> $headers
+     * @phpstan-param JsonApiResource $item
+     * @phpstan-param Headers $headers
      */
     public function withResourceItem(
         JsonApiResource $item,
@@ -79,29 +80,44 @@ interface ResponseContract
     /**
      * Return a new JSON response from a collection.
      *
-     * @param array<Entity>|\Doctrine\Common\Collections\Collection<TKey, Entity> $collection
+     * @phpstan-template Entity of object
+     * @phpstan-param array<Entity>|Collection<int|string, Entity> $collection
+     * @phpstan-param Headers $headers
      */
     public function withCollection(
-        $collection,
+        array|Collection $collection,
         TransformerAbstract $transformer,
-        string $resourceKey = ''
+        string $resourceKey = '',
+        array $headers = []
     ): SymfonyResponse;
+
+    /**
+     * Return a new JSON response of Errors. StatusCode must be
+     * a valid Http Error Code.
+     *
+     * @phpstan-param array<mixed> $errors
+     */
+    public function withErrors(array $errors): JsonResponse;
 
     /**
      * Returns a 204 no content.
      *
-     * @param array<string,array<string>> $headers
+     * @phpstan-param Headers $headers
      */
     public function noContent(array $headers = []): JsonResponse;
+
     /**
      * Return a new JSON response from a paginated collection.
      *
-     * @param Paginator<Entity>|PaginatedCollection<Entity> $paginator
+     * @phpstan-template Entity of object
+     * @phpstan-param PaginatedCollection<string|int, Entity> $paginatedCollection
+     * @phpstan-param Headers $headers
      */
-    public function withPagination(
-        $paginator,
+    public function withPaginatedCollection(
+        PaginatedCollection $paginatedCollection,
         TransformerAbstract $transformer,
-        string $resourceKey = ''
+        string $resourceKey = '',
+        array $headers = []
     ): JsonResponse;
 
     /**
@@ -146,7 +162,7 @@ interface ResponseContract
      *      'email' => ['email should be a valid email'],
      *  ]
      *
-     *  @param array<string, string[]> $messages
+     *  @phpstan-param array<string, string[]> $messages
      */
     public function errorsValidation(array $messages): JsonResponse;
 

@@ -7,7 +7,11 @@ use Throwable;
 
 class InvalidAttributesRequested extends Exception
 {
-    public function __construct(array $invalidKeys, array $availableKeys, $code = 0, Throwable $previous = null)
+    /**
+     * @phpstan-param string[] $invalidKeys
+     * @phpstan-param string[] $availableKeys
+     */
+    public function __construct(array $invalidKeys, array $availableKeys, int $code = 0, Throwable $previous = null)
     {
         $message = sprintf(
             'Invalid Attribute Requested: %s. Valid keys are %s.',

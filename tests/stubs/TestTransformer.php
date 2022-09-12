@@ -10,15 +10,9 @@ use Giadc\JsonApiResponse\Fractal\ResourceTransformer;
  */
 class TestTransformer extends ResourceTransformer
 {
-    /**
-     * @var array
-     */
-    protected $availableIncludes = [];
+    protected array $availableIncludes = [];
 
-    /**
-     * @var array
-     */
-    protected $defaultIncludes = [];
+    protected array $defaultIncludes = [];
 
     protected array $defaultFields = [];
 

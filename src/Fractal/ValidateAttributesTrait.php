@@ -10,8 +10,8 @@ trait ValidateAttributesTrait
     /**
      * Validates that all requested attributes exist in the data.
      *
-     * @param string[] $fields
-     * @param string[] $data
+     * @phpstan-param string[] $fields
+     * @phpstan-param string[] $data
      *
      * @throws InvalidAttributesRequested
      */
