@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class ResponseTest extends TestCase
 {
+    private $response;
     public function setUp(): void
     {
         $this->response = new Response(new Manager(), new RequestParams());
