@@ -46,13 +46,13 @@ interface ResponseContract
      */
     public function createSuccessful(
         mixed $entity = null,
-        TransformerAbstract $transformer = null,
+        ?TransformerAbstract $transformer = null,
         string $resourceKey = '',
         array $headers = []
     ): SymfonyResponse;
 
     /**
-     * Return a new JSON response from an item
+     * Return a new JSON response from an item.
      *
      * @phpstan-template Entity of object
      * @phpstan-param Entity $item

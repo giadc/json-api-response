@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Giadc\JsonApiResponse\Fractal;
 
 use Giadc\JsonApiRequest\Requests\RequestParams;
@@ -21,7 +23,7 @@ abstract class ResourceTransformer extends TransformerAbstract
         ExcludeModifier::class,
     ];
 
-    public function __construct(Request $request = null)
+    public function __construct(?Request $request = null)
     {
         $this->requestParams = new RequestParams($request);
     }

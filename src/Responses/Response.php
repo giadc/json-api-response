@@ -81,7 +81,7 @@ class Response implements ResponseContract
      */
     public function createSuccessful(
         mixed $entity = null,
-        TransformerAbstract $transformer = null,
+        ?TransformerAbstract $transformer = null,
         string $resourceKey = '',
         array $headers = []
     ): SymfonyResponse {
@@ -146,6 +146,7 @@ class Response implements ResponseContract
         array $headers = []
     ): JsonResponse {
         $resource = new Item($item, $transformer, $resourceKey);
+
         return $this->withArray(
             $this->createFractalDataArray($resource),
             $headers
@@ -161,7 +162,7 @@ class Response implements ResponseContract
         string $resourceKey = '',
         array $headers = []
     ): SymfonyResponse {
-        $resource  = new FractalCollection($collection, $transformer, $resourceKey);
+        $resource = new FractalCollection($collection, $transformer, $resourceKey);
 
         return $this->withArray(
             $this->createFractalDataArray($resource),
@@ -223,15 +224,15 @@ class Response implements ResponseContract
     {
         $this->confirmErrorStatusCode();
 
-        return $this->withArray(array(
-            'errors' => array(
-                array(
-                    'code'   => $this->getErrorCode($this->statusCode),
+        return $this->withArray([
+            'errors' => [
+                [
+                    'code' => $this->getErrorCode($this->statusCode),
                     'status' => $this->statusCode,
                     'detail' => $message,
-                ),
-            ),
-        ));
+                ],
+            ],
+        ]);
     }
 
     /**
@@ -242,9 +243,9 @@ class Response implements ResponseContract
     {
         $this->confirmErrorStatusCode();
 
-        return $this->withArray(array(
+        return $this->withArray([
             'errors' => $errors,
-        ));
+        ]);
     }
 
     /**
@@ -286,21 +287,21 @@ class Response implements ResponseContract
         string $message = 'Validation Error',
         string $field = null
     ): JsonResponse {
-        $error = array(
-            'code'   => "VALIDATION_ERROR",
+        $error = [
+            'code' => 'VALIDATION_ERROR',
             'status' => 422,
             'detail' => $message,
-        );
+        ];
 
         if (!is_null($field)) {
             $error['source'] = ['parameter' => $field];
         }
 
-        return $this->setStatusCode(422)->withArray(array(
-            'errors' => array(
+        return $this->setStatusCode(422)->withArray([
+            'errors' => [
                 $error,
-            ),
-        ));
+            ],
+        ]);
     }
 
     /**
@@ -311,7 +312,7 @@ class Response implements ResponseContract
         $errorObjects = array_map(function ($field, $errors) {
             return array_map(function ($error) use ($field) {
                 return [
-                    'code'   => "VALIDATION_ERROR",
+                    'code' => 'VALIDATION_ERROR',
                     'status' => 422,
                     'detail' => $error,
                     'source' => ['parameter' => $field],

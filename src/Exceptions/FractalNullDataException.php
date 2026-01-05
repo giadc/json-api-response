@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Giadc\JsonApiResponse\Exceptions;
 
 use Exception;
@@ -10,7 +12,7 @@ class FractalNullDataException extends Exception
     public function __construct(
         string|null $resourceKey = null,
         int $code = 0,
-        Throwable $previous = null
+        ?Throwable $previous = null
     ) {
         $resourceKeyNullOrEmpty = ($resourceKey === null || trim($resourceKey) === '');
         $message = sprintf(
