@@ -285,7 +285,7 @@ class Response implements ResponseContract
      */
     public function errorValidation(
         string $message = 'Validation Error',
-        string $field = null
+        ?string $field = null
     ): JsonResponse {
         $error = [
             'code' => 'VALIDATION_ERROR',
